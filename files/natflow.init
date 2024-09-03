@@ -5,27 +5,15 @@ START=95
 
 disable_gro_gso() {
 	for eth in $(ifconfig | grep "^eth\|^dsa|^lan|^wan" | awk '{print $1}' | sort | uniq); do
-		ethtool -k "$eth" | grep -q "generic-receive-offload: off" || {
-			ethtool -K "$eth" gro off
-			logger -t natflow "disable gro for <$eth>"
-		}
-		ethtool -k "$eth" | grep -q "generic-segmentation-offload: off" || {
-			ethtool -K "$eth" gso off
-			logger -t natflow "disable gso for <$eth>"
-		}
+		ethtool -k "$eth" | grep -q "generic-receive-offload: off" || ethtool -K "$eth" gro off
+		ethtool -k "$eth" | grep -q "generic-segmentation-offload: off" || ethtool -K "$eth" gso off
 	done
 }
 
 enable_gro_gso() {
 	for eth in $(ifconfig | grep "^eth\|^dsa|^lan|^wan" | awk '{print $1}' | sort | uniq); do
-		ethtool -k "$eth" | grep -q "generic-receive-offload: on" || {
-			ethtool -K "$eth" gro on
-			logger -t natflow "enable gro for <$eth>"
-		}
-		ethtool -k "$eth" | grep -q "generic-segmentation-offload: on" || {
-			ethtool -K "$eth" gso on
-			logger -t natflow "enable gro for <$eth>"
-		}
+		[[ "$(uname -m)" != arm* ]] && ethtool -k "$eth" | grep -q "generic-receive-offload: on" || ethtool -K "$eth" gro on
+		ethtool -k "$eth" | grep -q "generic-segmentation-offload: on" || ethtool -K "$eth" gso on
 	done
 }
 
@@ -37,16 +25,17 @@ start() {
 	echo disabled=0 >/dev/natflow_ctl
 	echo "delay_pkts=$delay_pkts" >/dev/natflow_ctl
 	echo ifname_clear >/dev/natflow_ctl
+	logger -t natflow "natflow has been enabled"
 }
 
 stop() {
 	test -c /dev/natflow_ctl || return 0
 	enable_gro_gso
 	echo disabled=1 >/dev/natflow_ctl
+	logger -t natflow "natflow has been disabled"
 }
 
 restart() {
 	stop
-	sleep 1
 	start
 }
