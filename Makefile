@@ -38,7 +38,9 @@ endef
 
 include $(INCLUDE_DIR)/kernel-defaults.mk
 
+ifeq (,$(findstring clang,$(KERNEL_CC)))
 EXTRA_CFLAGS += -Wno-stringop-overread
+endif
 
 EXTRA_CFLAGS += -DCONFIG_NATFLOW_PATH -DCONFIG_NATFLOW_URLLOGGER -DNATFLOW_VERSION=\\\"$(PKG_VERSION)-$(shell echo $(PKG_HASH) | head -c7)\\\"
 ifneq ($(CONFIG_TARGET_mediatek_mt7622),)
