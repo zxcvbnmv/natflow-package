@@ -9,11 +9,12 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=natflow
-PKG_VERSION:=20241002
+PKG_VERSION:=5bf7267
+PKG_RELEASE:=$(AUTORELEASE)
 
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/ptpt52/natflow/tar.gz/$(PKG_VERSION)?
 PKG_HASH:=skip
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 
 PKG_MAINTAINER:=Chen Minqiang <ptpt52@gmail.com>
 PKG_LICENSE:=GPL-2.0
@@ -60,21 +61,23 @@ define Build/Compile
 	$(call Build/Compile/natflow)
 endef
 
-define Package/natflow
-  SECTION:=net
-  CATEGORY:=Network
-  TITLE:=Natflow init script
+define Package/natflow-boot
+  CATEGORY:=X
+  SUBMENU:=Fast Forward Stacks
+  TITLE:=natflow boot init script
   DEPENDS:= +kmod-natflow
 endef
 
-define Package/natflow/install
-	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_BIN) ./files/70-luci-firewall-natflow $(1)/etc/uci-defaults
+define Package/natflow-boot/install
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/natflow.init $(1)/etc/init.d/natflow
+	$(INSTALL_BIN) ./files/natflow-boot.init $(1)/etc/init.d/natflow-boot
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
-	$(INSTALL_DATA) ./files/21-natflow.hotplug $(1)/etc/hotplug.d/iface/21-natflow
+	$(INSTALL_DATA) ./files/21-natflow-boot.hotplug $(1)/etc/hotplug.d/iface/21-natflow-boot
+	$(INSTALL_DIR) $(1)/lib/preinit
+	$(INSTALL_DATA) ./files/natflow-boot.preinit $(1)/lib/preinit/95_natflow-boot
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/60-luci-firewall-natflow $(1)/etc/uci-defaults
 endef
 
 $(eval $(call KernelPackage,natflow))
-$(eval $(call BuildPackage,natflow))
+$(eval $(call BuildPackage,natflow-boot))
