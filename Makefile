@@ -29,7 +29,7 @@ define KernelPackage/natflow
 	    CONFIG_NETFILTER_INGRESS=y
   FILES:=$(PKG_BUILD_DIR)/natflow.ko
   AUTOLOAD:=$(call AutoLoad,96,natflow)
-  DEPENDS:= +kmod-ipt-conntrack +kmod-ipt-nat +kmod-ipt-ipset +kmod-br-netfilter
+  DEPENDS:= +kmod-ipt-conntrack +kmod-ipt-nat +kmod-ipt-ipset +kmod-br-netfilter +LINUX_5_4:kmod-nf-flow
 endef
 
 define KernelPackage/natflow/description
@@ -38,9 +38,7 @@ endef
 
 include $(INCLUDE_DIR)/kernel-defaults.mk
 
-ifeq (,$(findstring clang,$(KERNEL_CC)))
 EXTRA_CFLAGS += -Wno-stringop-overread
-endif
 
 EXTRA_CFLAGS += -DCONFIG_NATFLOW_PATH -DCONFIG_NATFLOW_URLLOGGER -DNATFLOW_VERSION=\\\"$(PKG_VERSION)-$(shell echo $(PKG_HASH) | head -c7)\\\"
 ifneq ($(CONFIG_TARGET_mediatek_mt7622),)
@@ -66,7 +64,7 @@ define Package/natflow
   SECTION:=net
   CATEGORY:=Network
   TITLE:=Natflow init script
-  DEPENDS:=+ethtool +kmod-natflow
+  DEPENDS:= +kmod-natflow
 endef
 
 define Package/natflow/install
