@@ -10,7 +10,6 @@ disable_gro_gso() {
 		{
 			ethtool -K "$i" gso off
 			ethtool -K "$i" gro off
-			ethtool -K "$i" rx-gro-list off
 		}
 	done
 }
@@ -22,7 +21,6 @@ enable_gso() {
 		{
 			ethtool -K "$i" gso on
 			ethtool -K "$i" gro on
-			ethtool -K "$i" rx-gro-list off
 		}
 	done
 }
@@ -31,14 +29,12 @@ start() {
 	test -c /dev/natflow_ctl || return 0
 	[ "$(uci -q get firewall.@defaults[0].natflow)" != 1 ] && return 0
 	disable_gro_gso
-	enabled=$(uci get firewall.@defaults[0].natflow 2>/dev/null || echo 0)
 	delay_pkts=$(uci get firewall.@defaults[0].natflow_delay_pkts 2>/dev/null || echo 0)
 
 	echo "debug=0" >/dev/natflow_ctl
-	echo "disabled=$((!enabled))" >/dev/natflow_ctl
+	echo "disabled=0" >/dev/natflow_ctl
 	echo "delay_pkts=$delay_pkts" >/dev/natflow_ctl
 	echo "go_slowpath_if_no_qos=0" >/dev/natflow_ctl
-	echo ifname_clear >/dev/natflow_ctl
 	logger -t natflow "natflow has been enabled"
 }
 
